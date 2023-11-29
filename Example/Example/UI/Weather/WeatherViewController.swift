@@ -44,8 +44,8 @@ class WeatherViewController: UIViewController {
     
     @IBAction func loadWeather(_ sender: Any?) {
         activityIndicator.startAnimating()
-        weatherModel.fetchWeather(at: "tokyo", date: Date()) { result in
-            DispatchQueue.main.async { [weak self] in
+        weatherModel.fetchWeather(at: "tokyo", date: Date()) { [weak self] result in
+            DispatchQueue.main.async {
                 guard let self else { return }
                 self.activityIndicator.stopAnimating()
                 self.handleWeather(result: result)
@@ -76,8 +76,7 @@ class WeatherViewController: UIViewController {
             }
             
             let alertController = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-            alertController.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
-                guard let self else { return }
+            alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
                 self.dismiss(animated: true) {
                     print("Close ViewController by \(alertController)")
                 }
