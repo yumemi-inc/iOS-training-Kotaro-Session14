@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Combine
 
 protocol WeatherModel {
     func fetchWeather(at area: String, date: Date, completion: @escaping (Result<Response, WeatherError>) -> Void)
@@ -26,18 +27,15 @@ class WeatherViewController: UIViewController {
     @IBOutlet weak var disasterLabel: UILabel!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
+    private var cancellable: AnyCancellable?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // 「UIApplication.didBecomeActiveNotificationという通知が発生した際に、loadWeather()を実行する」ことを設定。
-        NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [weak self] notification in
-            guard let self else { return }
-            self.loadWeather(notification.object)
-        }
-    }
-    
-    deinit {
-        print(#function)
+        self.cancellable = NotificationCenter.default
+                                .publisher(for: UIApplication.didBecomeActiveNotification)
+                                .sink(receiveValue: { [unowned self] notification in
+                                    self.loadWeather(notification.object)
+                                })
     }
             
     @IBAction func dismiss(_ sender: Any) {
