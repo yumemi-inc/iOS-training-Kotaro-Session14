@@ -29,7 +29,9 @@ class WeatherViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [unowned self] notification in
+        // 「UIApplication.didBecomeActiveNotificationという通知が発生した際に、loadWeather()を実行する」ことを設定。
+        NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [weak self] notification in
+            guard let self else { return }
             self.loadWeather(notification.object)
         }
     }
