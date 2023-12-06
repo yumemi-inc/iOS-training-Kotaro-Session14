@@ -30,7 +30,7 @@ class WeatherViewController: UIViewController {
         super.viewDidLoad()
         
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [unowned self] notification in
-            self.loadWeather(notification.object)
+            loadWeather(notification.object)
         }
     }
     
@@ -39,18 +39,20 @@ class WeatherViewController: UIViewController {
     }
             
     @IBAction func dismiss(_ sender: Any) {
-        self.dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
     
     @IBAction func loadWeather(_ sender: Any?) {
-        self.activityIndicator.startAnimating()
-        weatherModel.fetchWeather(at: "tokyo", date: Date()) { result in
+        activityIndicator.startAnimating()
+        weatherModel.fetchWeather(at: "tokyo", date: Date()) { [weak self] result in
             DispatchQueue.main.async {
+                guard let self else { return }
                 self.activityIndicator.stopAnimating()
                 self.handleWeather(result: result)
             }
         }
-        disasterModel.fetchDisaster { (disaster) in
+        disasterModel.fetchDisaster { [weak self] (disaster) in
+            guard let self else { return }
             self.disasterLabel.text = disaster
         }
     }
@@ -58,9 +60,9 @@ class WeatherViewController: UIViewController {
     func handleWeather(result: Result<Response, WeatherError>) {
         switch result {
         case .success(let response):
-            self.weatherImageView.set(weather: response.weather)
-            self.minTempLabel.text = String(response.minTemp)
-            self.maxTempLabel.text = String(response.maxTemp)
+            weatherImageView.set(weather: response.weather)
+            minTempLabel.text = String(response.minTemp)
+            maxTempLabel.text = String(response.maxTemp)
             
         case .failure(let error):
             let message: String
@@ -74,12 +76,13 @@ class WeatherViewController: UIViewController {
             }
             
             let alertController = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-            alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            alertController.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+                guard let self else { return }
                 self.dismiss(animated: true) {
                     print("Close ViewController by \(alertController)")
                 }
             })
-            self.present(alertController, animated: true, completion: nil)
+            present(alertController, animated: true, completion: nil)
         }
     }
 }
@@ -88,14 +91,14 @@ private extension UIImageView {
     func set(weather: Weather) {
         switch weather {
         case .sunny:
-            self.image = R.image.sunny()
-            self.tintColor = R.color.red()
+            image = R.image.sunny()
+            tintColor = R.color.red()
         case .cloudy:
-            self.image = R.image.cloudy()
-            self.tintColor = R.color.gray()
+            image = R.image.cloudy()
+            tintColor = R.color.gray()
         case .rainy:
-            self.image = R.image.rainy()
-            self.tintColor = R.color.blue()
+            image = R.image.rainy()
+            tintColor = R.color.blue()
         }
     }
 }
