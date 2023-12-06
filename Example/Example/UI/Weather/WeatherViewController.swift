@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Combine
 
 protocol WeatherModel {
     func fetchWeather(at area: String, date: Date, completion: @escaping (Result<Response, WeatherError>) -> Void)
@@ -26,18 +27,22 @@ class WeatherViewController: UIViewController {
     @IBOutlet weak var disasterLabel: UILabel!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
+    private var subscriptions = Set<AnyCancellable>()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [unowned self] notification in
-            self.loadWeather(notification.object)
-        }
+        NotificationCenter.default
+            .publisher(for: UIApplication.didBecomeActiveNotification)
+            .sink(receiveValue: { [unowned self] notification in
+                self.loadWeather(notification.object)
+            })
+            .store(in: &subscriptions)
     }
     
     deinit {
         print(#function)
     }
-            
+    
     @IBAction func dismiss(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
     }
